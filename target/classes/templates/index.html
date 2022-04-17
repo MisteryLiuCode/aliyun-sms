@@ -1,0 +1,172 @@
+<!doctype html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity4">
+
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="css/bootstrap.min.css" type="text/css" rel="stylesheet">
+<link href="css/font-awesome.min.css" type="text/javascript" rel="stylesheet">
+<link href="css/bootsnav.css" type="text/css" rel="stylesheet">
+<link href="css/normalize.css" type="text/css" rel="stylesheet">
+<link href="css/css.css" rel="stylesheet" type="text/css">
+<script src="js/jquery-1.11.0.min.js" type="text/javascript"></script>
+<script src="js/jquery.step.js"></script>
+<script src="js/bootstrap.min.js" type="text/javascript"></script>
+<script src="js/bootsnav.js" type="text/javascript"></script>
+
+<script src="js/jquery.js" type="text/javascript"></script>
+<!--[if IE]><script src="js/html5.js"></script><![endif]-->
+<title>注册</title>
+</head>
+
+<body class="logobg_style">
+	<div id="large-header" class="large-header login-page">
+		<canvas id="demo-canvas" width="1590" height="711"></canvas>
+		<div class="Retrieve_style">
+			<div class="Retrieve-content step-body" id="myStep">
+				<h1 class="title_name">用户注册</h1>
+
+				<div class="step-content">
+					<div class="step-list login_padding">
+						<form role="form" id="form_login" class="">
+							<div class="form-group clearfix">
+								<div class="input-group col-lg-8 col-md-8 col-xs-8">
+									<div class="input-group-addon">
+										<i class="icon_phone"></i>
+									</div>
+									<!-- 手机号 -->
+									<input type="text" class="form-control text_phone" name="phone" id="phone" placeholder="你的手机号" autocomplete="off">
+								</div>
+								<div class="col-lg-4 col-md-4 col-xs-4 fl">
+									<!-- 发送验证码 -->
+									<input type="button" id="sms-input" class="btn_mfyzm" value="获取验证码" onclick="SendSMS()" />
+								</div>
+							</div>
+							<div class="form-group clearfix">
+								<div class="input-group">
+									<div class="input-group-addon">
+										<i class="icon_yanzhen"></i>
+									</div>
+									<!-- 输入验证码 -->
+									<input type="text" class="form-control" name="Verification" id="sms-code" placeholder="短信验证码" autocomplete="off">
+								</div>
+							</div>
+							<div class="tishi"></div>
+						</form>
+						<div class="form-group">
+							<!-- 下一步按钮 -->
+							<button  class="btn btn-danger btn-block btn-login" id="applyBtn" onclick="ValidateSMS()">下一步</button>
+						</div>
+
+					</div>
+
+
+
+				</div>
+			</div>
+		</div>
+	</div>
+	<script src="js/TweenLite/TweenLite.min.js"></script>
+	<script src="js/TweenLite/EasePack.min.js"></script>
+	<script src="js/TweenLite/rAF.js"></script>
+	<script src="js/TweenLite/demo-1.js"></script>
+	<script src="js/layer/layer.js"></script>
+	<script type="text/javascript" th:inline="javascript">
+		var time = 60;
+		var InterValOjb;
+		
+		//页面加载完成的时候就会调用
+		window.onload = function()
+		{
+			document.getElementById("applyBtn").disabled = false;
+		}
+		
+		function timer()
+		{
+			if(time == 0)
+			{
+				//layer.msg("成功");	
+				time = 60;
+				$("#sms-input").val("获取验证码");
+				document.getElementById("sms-input").disabled = false
+				//删除定时器
+				window.clearInterval(InterValOjb);
+			}else{
+				time--
+				//layer.msg(time+"秒")
+				$("#sms-input").val(time+"秒")
+			}
+			
+			
+		}
+		
+		var sms;
+		
+		function SendSMS(){
+			//alert("fasdfasd")
+			//获取用户输入的手机
+			var telephone = $("#phone").val();
+			//alert(telephone);
+			if(!(/^1(3|4|5|6|7|8|9)\d{9}$/.test(telephone))){ 
+				layer.msg("手机号码有误，请重填");  
+			    return; 
+			}
+			//发送Ajax请求
+			$.post(
+				//发送的url
+				[[@{~/send}]],
+				//数据
+				{"phone":telephone},
+				//回调
+				function(data)
+				{
+					if(data.success)
+					{
+						$("#lain_username").val(telephone)
+						layer.msg("验证码发送成功~请注意查收~")
+						sms = data.sms;						
+					}else{
+						layer.msg(data.message)
+					}
+				},
+				//数据格式
+				"json"
+			)
+			
+			//设置按钮不能继续点击
+			$("#sms-input").attr("disabled","true")
+			//每隔1000ms就调用一次这个timer方法
+			InterValOjb = window.setInterval(timer,1000);
+		}
+
+
+		function ValidateSMS(){
+			var code = $("#sms-code").val();
+			var telephone = $("#phone").val();
+			//发送Ajax请求
+			$.post(
+					//发送的url
+					[[@{~/validate}]],
+						//数据
+						{"phone":telephone,"code":code},
+						//回调
+						function(data)
+						{
+							if(data.success)
+							{
+								layer.msg("验证码正确");
+							}else{
+								layer.msg(data.message)
+							}
+
+						},
+						//数据格式
+						"json"
+			)
+		}
+
+
+	</script>
+</body>
+</html>
